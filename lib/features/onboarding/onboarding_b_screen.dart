@@ -142,7 +142,7 @@ class _BreathingOrbState extends State<_BreathingOrb>
               ),
               boxShadow: [
                 BoxShadow(
-                  color: widget.gradient.first.withOpacity(_glow.value),
+                  color: widget.gradient.first.withValues(alpha: _glow.value),
                   blurRadius: 60,
                   spreadRadius: 10,
                 ),

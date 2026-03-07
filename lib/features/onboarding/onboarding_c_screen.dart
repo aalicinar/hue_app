@@ -216,7 +216,7 @@ class _PresetRow extends StatelessWidget {
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: preset.primaryColor.withOpacity(0.6),
+                        color: preset.primaryColor.withValues(alpha: 0.6),
                         blurRadius: 16,
                         spreadRadius: 2,
                       ),
@@ -224,7 +224,7 @@ class _PresetRow extends StatelessWidget {
                   : null,
               border: Border.all(
                 color: isSelected
-                    ? Colors.white.withOpacity(0.6)
+                    ? Colors.white.withValues(alpha: 0.6)
                     : Colors.transparent,
                 width: 2,
               ),
@@ -276,7 +276,7 @@ class _HueSendButton extends StatelessWidget {
           boxShadow: isEnabled
               ? [
                   BoxShadow(
-                    color: colors.first.withOpacity(0.5),
+                    color: colors.first.withValues(alpha: 0.5),
                     blurRadius: 24,
                     spreadRadius: 4,
                   ),

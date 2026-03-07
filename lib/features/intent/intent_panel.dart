@@ -7,6 +7,9 @@ import '../../app/theme/text_styles.dart';
 import '../../domain/models/models.dart';
 import '../home/home_providers.dart';
 
+/// Quick replies shown in intent panel (Tamam, Evet, Hayır, Sonra)
+const _kQuickReplies = ['Tamam ✓', 'Evet', 'Hayır', 'Sonra'];
+
 class IntentPanel extends ConsumerStatefulWidget {
   final Contact contact;
   const IntentPanel({super.key, required this.contact});
@@ -27,51 +30,61 @@ class _IntentPanelState extends ConsumerState<IntentPanel> {
     if (mounted) {
       final preset = _selectedPreset!;
       Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Row(
-            children: [
-              Text(
-                '${widget.contact.name}\'e gönderildi',
-                style: HueTextStyles.meta.copyWith(color: Colors.white),
-              ),
-              const Spacer(),
-              GestureDetector(
-                onTap: () =>
-                    ScaffoldMessenger.of(context).hideCurrentSnackBar(),
-                child: Text(
-                  'Geri al',
-                  style:
-                      HueTextStyles.meta.copyWith(color: preset.primaryColor),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: HueColors.bgCard,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 3),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(HueRadius.lg),
-          ),
-          margin: const EdgeInsets.all(HueSpacing.md),
-        ),
-      );
+      _showSentSnackBar(preset.primaryColor, '${widget.contact.name}\'e hue gönderildi');
     }
+  }
+
+  void _sendQuickReply(String text) {
+    Navigator.pop(context);
+    _showSentSnackBar(const Color(0xFFFF8C42), '${widget.contact.name}\'e "$text" gönderildi');
+  }
+
+  void _showSentSnackBar(Color accentColor, String message) {
+    final c = context.hue;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Text(
+              message,
+              style: HueTextStyles.meta.copyWith(color: Colors.white),
+            ),
+            const Spacer(),
+            GestureDetector(
+              onTap: () =>
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar(),
+              child: Text(
+                'Geri al',
+                style: HueTextStyles.meta.copyWith(color: accentColor),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: c.bgCard,
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 3),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(HueRadius.lg),
+        ),
+        margin: const EdgeInsets.all(HueSpacing.md),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final prefs = ref.watch(userPrefsProvider);
+    final c = context.hue;
     final screenHeight = MediaQuery.of(context).size.height;
     final customLabel = _selectedPreset != null
         ? prefs.getLabelFor(widget.contact.id, _selectedPreset!.name)
         : null;
 
     return Container(
-      height: screenHeight * 0.66,
-      decoration: const BoxDecoration(
-        color: HueColors.bgSecondary,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(HueRadius.xl)),
+      height: screenHeight * 0.72,
+      decoration: BoxDecoration(
+        color: c.bgSecondary,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(HueRadius.xl)),
       ),
       child: Column(
         children: [
@@ -91,12 +104,12 @@ class _IntentPanelState extends ConsumerState<IntentPanel> {
                     width: 36,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: HueColors.borderSubtle,
+                      color: c.borderSubtle,
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                   const Gap(HueSpacing.md),
-                  // Header
+                  // Header row
                   Row(
                     children: [
                       _AvatarSmall(contact: widget.contact),
@@ -106,9 +119,9 @@ class _IntentPanelState extends ConsumerState<IntentPanel> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(widget.contact.name,
-                                style: HueTextStyles.label),
+                                style: HueTextStyles.label.copyWith(color: c.textPrimary)),
                             Text(widget.contact.presenceStatus.label,
-                                style: HueTextStyles.caption),
+                                style: HueTextStyles.caption.copyWith(color: c.textSecondary)),
                           ],
                         ),
                       ),
@@ -118,19 +131,24 @@ class _IntentPanelState extends ConsumerState<IntentPanel> {
                           context.go('/conversation/${widget.contact.id}');
                         },
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: HueColors.textSecondary,
-                          side: const BorderSide(color: HueColors.borderSubtle),
+                          foregroundColor: c.textSecondary,
+                          side: BorderSide(color: c.borderSubtle),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 6),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(HueRadius.md),
                           ),
                         ),
-                        child: Text('Sohbet aç', style: HueTextStyles.caption),
+                        child: Text('Sohbet aç', style: HueTextStyles.caption.copyWith(color: c.textSecondary)),
                       ),
                     ],
                   ),
                   const Gap(HueSpacing.md),
+
+                  // ── Hızlı yanıt butonları ────────────────────────────
+                  _QuickReplyRow(replies: _kQuickReplies, onSend: _sendQuickReply),
+                  const Gap(HueSpacing.md),
+
                   // Preview Orb
                   _PreviewOrb(selectedPreset: _selectedPreset),
                   if (customLabel != null) ...[
@@ -166,21 +184,21 @@ class _IntentPanelState extends ConsumerState<IntentPanel> {
                     onLongPress: (p) => _showLabelEditor(context, p, prefs),
                   ),
                   const Gap(HueSpacing.sm),
-                  // Intensity slider (sadece seçiliyse)
+                  // Intensity slider
                   if (_selectedPreset != null) ...[
                     Row(
                       children: [
-                        Text('Yoğunluk', style: HueTextStyles.caption),
+                        Text('Yoğunluk', style: HueTextStyles.caption.copyWith(color: c.textSecondary)),
                         const Spacer(),
                         Text('${(_intensity * 100).round()}%',
-                            style: HueTextStyles.caption),
+                            style: HueTextStyles.caption.copyWith(color: c.textSecondary)),
                       ],
                     ),
                     SliderTheme(
                       data: SliderTheme.of(context).copyWith(
                         trackHeight: 4,
                         activeTrackColor: _selectedPreset!.primaryColor,
-                        inactiveTrackColor: HueColors.borderSubtle,
+                        inactiveTrackColor: c.borderSubtle,
                         thumbColor: _selectedPreset!.primaryColor,
                         overlayColor: _selectedPreset!.primaryColor
                             .withValues(alpha: 0.2),
@@ -197,7 +215,7 @@ class _IntentPanelState extends ConsumerState<IntentPanel> {
                       child: Text(
                         'Uzun bas → anlam ata',
                         style: HueTextStyles.caption.copyWith(
-                          color: HueColors.textDisabled,
+                          color: c.textDisabled,
                           fontStyle: FontStyle.italic,
                         ),
                         textAlign: TextAlign.center,
@@ -208,7 +226,7 @@ class _IntentPanelState extends ConsumerState<IntentPanel> {
               ),
             ),
           ),
-          // ── Sabit alt bar (asla overflow olmaz) ─────────
+          // ── Sabit alt bar ─────────────────────────────
           Container(
             padding: const EdgeInsets.fromLTRB(
               HueSpacing.md,
@@ -216,15 +234,15 @@ class _IntentPanelState extends ConsumerState<IntentPanel> {
               HueSpacing.md,
               HueSpacing.lg,
             ),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               border: Border(
-                  top: BorderSide(color: HueColors.borderSubtle, width: 0.5)),
+                  top: BorderSide(color: c.borderSubtle, width: 0.5)),
             ),
             child: Row(
               children: [
                 IconButton(
                   icon: const Icon(Icons.photo_outlined),
-                  color: HueColors.textSecondary,
+                  color: c.textSecondary,
                   onPressed: () {},
                 ),
                 const Spacer(),
@@ -243,12 +261,13 @@ class _IntentPanelState extends ConsumerState<IntentPanel> {
 
   void _showLabelEditor(
       BuildContext ctx, HuePreset preset, UserPreferences prefs) {
+    final c = ctx.hue;
     final existing = prefs.getLabelFor(widget.contact.id, preset.name) ?? '';
     final controller = TextEditingController(text: existing);
     showDialog(
       context: ctx,
       builder: (_) => AlertDialog(
-        backgroundColor: HueColors.bgSecondary,
+        backgroundColor: c.bgSecondary,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(HueRadius.xl),
         ),
@@ -265,7 +284,7 @@ class _IntentPanelState extends ConsumerState<IntentPanel> {
             const Gap(HueSpacing.sm),
             Text(
               '${preset.label} anlamı',
-              style: HueTextStyles.label,
+              style: HueTextStyles.label.copyWith(color: c.textPrimary),
             ),
           ],
         ),
@@ -275,20 +294,20 @@ class _IntentPanelState extends ConsumerState<IntentPanel> {
           children: [
             Text(
               '${widget.contact.name} kişisine özel anlam gir:',
-              style: HueTextStyles.caption,
+              style: HueTextStyles.caption.copyWith(color: c.textSecondary),
             ),
             const Gap(HueSpacing.sm),
             TextField(
               controller: controller,
               autofocus: true,
               maxLength: 60,
-              style: HueTextStyles.body,
+              style: HueTextStyles.body.copyWith(color: c.textPrimary),
               decoration: InputDecoration(
                 hintText: 'örn. "Merak etme, iyiyim"',
-                hintStyle: HueTextStyles.meta,
+                hintStyle: HueTextStyles.meta.copyWith(color: c.textSecondary),
                 filled: true,
-                fillColor: HueColors.bgCard,
-                counterStyle: HueTextStyles.caption,
+                fillColor: c.bgCard,
+                counterStyle: HueTextStyles.caption.copyWith(color: c.textSecondary),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(HueRadius.md),
                   borderSide: BorderSide.none,
@@ -308,11 +327,11 @@ class _IntentPanelState extends ConsumerState<IntentPanel> {
                 Navigator.pop(ctx);
               },
               child: Text('Kaldır',
-                  style: HueTextStyles.meta.copyWith(color: HueColors.error)),
+                  style: HueTextStyles.meta.copyWith(color: c.error)),
             ),
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: Text('İptal', style: HueTextStyles.meta),
+            child: Text('İptal', style: HueTextStyles.meta.copyWith(color: c.textSecondary)),
           ),
           FilledButton(
             onPressed: () {
@@ -338,6 +357,56 @@ class _IntentPanelState extends ConsumerState<IntentPanel> {
   }
 }
 
+// ──────────────────────────────────────────────────────────
+// QUICK REPLY ROW
+// ──────────────────────────────────────────────────────────
+
+class _QuickReplyRow extends StatelessWidget {
+  final List<String> replies;
+  final ValueChanged<String> onSend;
+  const _QuickReplyRow({required this.replies, required this.onSend});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.hue;
+    return SizedBox(
+      height: 36,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: replies.length,
+        separatorBuilder: (_, __) => const Gap(HueSpacing.xs),
+        itemBuilder: (context, i) {
+          final text = replies[i];
+          return GestureDetector(
+            onTap: () => onSend(text),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: HueSpacing.md,
+                vertical: 0,
+              ),
+              decoration: BoxDecoration(
+                color: c.bgCard,
+                borderRadius: BorderRadius.circular(HueRadius.pill),
+                border: Border.all(color: c.borderSubtle),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                text,
+                style: HueTextStyles.caption.copyWith(
+                  color: c.textPrimary,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+// ──────────────────────────────────────────────────────────
+// AVATAR SMALL
 // ──────────────────────────────────────────────────────────
 
 class _AvatarSmall extends StatelessWidget {
@@ -372,13 +441,18 @@ class _AvatarSmall extends StatelessWidget {
   }
 }
 
+// ──────────────────────────────────────────────────────────
+// PREVIEW ORB
+// ──────────────────────────────────────────────────────────
+
 class _PreviewOrb extends StatelessWidget {
   final HuePreset? selectedPreset;
   const _PreviewOrb({this.selectedPreset});
   @override
   Widget build(BuildContext context) {
+    final c = context.hue;
     final colors =
-        selectedPreset?.gradient ?? [HueColors.bgCard, HueColors.borderSubtle];
+        selectedPreset?.gradient ?? [c.bgCard, c.borderSubtle];
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       width: HueSizes.orbPreview,
@@ -399,11 +473,15 @@ class _PreviewOrb extends StatelessWidget {
           ? Center(
               child: Text('?',
                   style: HueTextStyles.title
-                      .copyWith(color: HueColors.textDisabled)))
+                      .copyWith(color: c.textDisabled)))
           : null,
     );
   }
 }
+
+// ──────────────────────────────────────────────────────────
+// PRESETS ROW
+// ──────────────────────────────────────────────────────────
 
 class _PresetsRow extends StatelessWidget {
   final String contactId;
@@ -422,6 +500,7 @@ class _PresetsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.hue;
     const presets = [
       HuePreset.warm,
       HuePreset.busy,
@@ -492,7 +571,7 @@ class _PresetsRow extends StatelessWidget {
                   style: HueTextStyles.caption.copyWith(
                     color: isSelected
                         ? preset.primaryColor
-                        : HueColors.textSecondary,
+                        : c.textSecondary,
                   ),
                 ),
               ],
@@ -503,6 +582,10 @@ class _PresetsRow extends StatelessWidget {
     );
   }
 }
+
+// ──────────────────────────────────────────────────────────
+// SEND BUTTON
+// ──────────────────────────────────────────────────────────
 
 class _SendButton extends StatelessWidget {
   final HuePreset? selectedPreset;
@@ -515,9 +598,10 @@ class _SendButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.hue;
     final isEnabled = selectedPreset != null && !sending;
     final colors =
-        selectedPreset?.gradient ?? [HueColors.bgCard, HueColors.bgCard];
+        selectedPreset?.gradient ?? [c.bgCard, c.bgCard];
     return GestureDetector(
       onTap: isEnabled ? onSend : null,
       child: AnimatedContainer(
@@ -548,7 +632,7 @@ class _SendButton extends StatelessWidget {
                         strokeWidth: 2, color: Colors.white)))
             : Icon(
                 Icons.send_rounded,
-                color: isEnabled ? Colors.white : HueColors.textDisabled,
+                color: isEnabled ? Colors.white : c.textDisabled,
                 size: 28,
               ),
       ),

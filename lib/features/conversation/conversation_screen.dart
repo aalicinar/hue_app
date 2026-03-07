@@ -60,9 +60,10 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
   @override
   Widget build(BuildContext context) {
     final prefs = ref.watch(userPrefsProvider);
+    final c = context.hue;
 
     return Scaffold(
-      backgroundColor: HueColors.bgPrimary,
+      backgroundColor: c.bgPrimary,
       body: SafeArea(
         child: Column(
           children: [
@@ -79,7 +80,7 @@ class _ConversationScreenState extends ConsumerState<ConversationScreen> {
                         return Padding(
                           padding: const EdgeInsets.only(bottom: HueSpacing.sm),
                           child: msg.kind == MessageKind.hue
-                              ? _HueBubble(message: msg, isMe: isMe)
+                              ? _HuePill(message: msg, isMe: isMe)
                               : _TextBubble(message: msg, isMe: isMe),
                         ).animate(delay: (i * 50).ms).fadeIn(duration: 250.ms);
                       },
@@ -131,26 +132,28 @@ class _ConversationHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.hue;
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: HueSpacing.md,
         vertical: HueSpacing.sm,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         border: Border(
-            bottom: BorderSide(color: HueColors.borderSubtle, width: 0.5)),
+            bottom: BorderSide(color: c.borderSubtle, width: 0.5)),
       ),
       child: Row(
         children: [
           IconButton(
             icon: const Icon(Icons.arrow_back_ios_new, size: 18),
-            color: HueColors.textSecondary,
+            color: c.textSecondary,
             onPressed: () => context.go('/home'),
           ),
           Expanded(
             child: Column(
               children: [
-                Text(contact.name, style: HueTextStyles.subtitle),
+                Text(contact.name,
+                    style: HueTextStyles.subtitle.copyWith(color: c.textPrimary)),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -164,7 +167,7 @@ class _ConversationHeader extends StatelessWidget {
                     ),
                     const Gap(4),
                     Text(contact.presenceStatus.label,
-                        style: HueTextStyles.caption),
+                        style: HueTextStyles.caption.copyWith(color: c.textSecondary)),
                   ],
                 ),
               ],
@@ -172,7 +175,7 @@ class _ConversationHeader extends StatelessWidget {
           ),
           IconButton(
             icon: const Icon(Icons.home_outlined, size: 20),
-            color: HueColors.textSecondary,
+            color: c.textSecondary,
             onPressed: () => context.go('/home'),
           ),
         ],
@@ -200,15 +203,15 @@ class _QuickReplyBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final replies = prefs.quickReplies;
     if (replies.isEmpty) return const SizedBox.shrink();
+    final c = context.hue;
 
     return Container(
       padding: const EdgeInsets.symmetric(
         horizontal: HueSpacing.md,
         vertical: HueSpacing.sm,
       ),
-      decoration: const BoxDecoration(
-        border:
-            Border(top: BorderSide(color: HueColors.borderSubtle, width: 0.5)),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: c.borderSubtle, width: 0.5)),
       ),
       child: Row(
         children: [
@@ -227,13 +230,14 @@ class _QuickReplyBar extends StatelessWidget {
                                 vertical: 7,
                               ),
                               decoration: BoxDecoration(
-                                color: HueColors.bgCard,
+                                color: c.bgCard,
                                 borderRadius:
                                     BorderRadius.circular(HueRadius.pill),
-                                border:
-                                    Border.all(color: HueColors.borderSubtle),
+                                border: Border.all(color: c.borderSubtle),
                               ),
-                              child: Text(r.text, style: HueTextStyles.caption),
+                              child: Text(r.text,
+                                  style: HueTextStyles.caption
+                                      .copyWith(color: c.textPrimary)),
                             ),
                           ),
                         ))
@@ -247,11 +251,11 @@ class _QuickReplyBar extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(7),
               decoration: BoxDecoration(
-                color: HueColors.bgCard,
+                color: c.bgCard,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.edit_outlined,
-                  size: 16, color: HueColors.textSecondary),
+              child: Icon(Icons.edit_outlined,
+                  size: 16, color: c.textSecondary),
             ),
           ),
         ],
@@ -292,10 +296,12 @@ class _QuickReplyManagerSheetState extends State<_QuickReplyManagerSheet> {
   @override
   Widget build(BuildContext context) {
     final replies = widget.prefs.quickReplies;
+    final c = context.hue;
     return Container(
-      decoration: const BoxDecoration(
-        color: HueColors.bgSecondary,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(HueRadius.xl)),
+      decoration: BoxDecoration(
+        color: c.bgSecondary,
+        borderRadius:
+            const BorderRadius.vertical(top: Radius.circular(HueRadius.xl)),
       ),
       padding: EdgeInsets.only(
         left: HueSpacing.lg,
@@ -307,36 +313,37 @@ class _QuickReplyManagerSheetState extends State<_QuickReplyManagerSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Handle
           Center(
             child: Container(
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: HueColors.borderSubtle,
+                color: c.borderSubtle,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
           const Gap(HueSpacing.md),
-          Text('Hızlı Yanıtlar', style: HueTextStyles.subtitle),
+          Text('Hızlı Yanıtlar',
+              style: HueTextStyles.subtitle.copyWith(color: c.textPrimary)),
           const Gap(HueSpacing.sm),
           Text(
             'Bir kez dokun → anında gönder',
-            style: HueTextStyles.caption,
+            style: HueTextStyles.caption.copyWith(color: c.textSecondary),
           ),
           const Gap(HueSpacing.md),
-          // Mevcut yanıtlar
           Wrap(
             spacing: HueSpacing.xs,
             runSpacing: HueSpacing.xs,
             children: replies
                 .map((r) => Chip(
-                      label: Text(r.text, style: HueTextStyles.caption),
-                      backgroundColor: HueColors.bgCard,
-                      side: const BorderSide(color: HueColors.borderSubtle),
-                      deleteIcon: const Icon(Icons.close,
-                          size: 14, color: HueColors.textSecondary),
+                      label: Text(r.text,
+                          style: HueTextStyles.caption
+                              .copyWith(color: c.textPrimary)),
+                      backgroundColor: c.bgCard,
+                      side: BorderSide(color: c.borderSubtle),
+                      deleteIcon: Icon(Icons.close,
+                          size: 14, color: c.textSecondary),
                       onDeleted: r.isDefault
                           ? null
                           : () {
@@ -346,20 +353,20 @@ class _QuickReplyManagerSheetState extends State<_QuickReplyManagerSheet> {
                 .toList(),
           ),
           const Gap(HueSpacing.md),
-          // Yeni ekle
           Row(
             children: [
               Expanded(
                 child: TextField(
                   controller: _controller,
                   maxLength: 40,
-                  style: HueTextStyles.body,
+                  style: HueTextStyles.body.copyWith(color: c.textPrimary),
                   decoration: InputDecoration(
                     hintText: 'Yeni hızlı yanıt ekle...',
-                    hintStyle: HueTextStyles.meta,
+                    hintStyle:
+                        HueTextStyles.meta.copyWith(color: c.textSecondary),
                     counterText: '',
                     filled: true,
-                    fillColor: HueColors.bgCard,
+                    fillColor: c.bgCard,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(HueRadius.md),
                       borderSide: BorderSide.none,
@@ -400,56 +407,86 @@ class _QuickReplyManagerSheetState extends State<_QuickReplyManagerSheet> {
 }
 
 // ──────────────────────────────────────────────────────
-// BUBBLES
+// HUE PILL  (replaces the old circle bubble)
 // ──────────────────────────────────────────────────────
 
-class _HueBubble extends StatelessWidget {
+class _HuePill extends StatelessWidget {
   final Message message;
   final bool isMe;
-  const _HueBubble({required this.message, required this.isMe});
+  const _HuePill({required this.message, required this.isMe});
 
   @override
   Widget build(BuildContext context) {
     final intent = message.hueIntent!;
+
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Column(
         crossAxisAlignment:
             isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
         children: [
+          // ── Pill shape ──────────────────────────────────────
           Container(
-            width: 72,
-            height: 72,
+            constraints: BoxConstraints(
+              maxWidth: MediaQuery.of(context).size.width * 0.60,
+              minWidth: 120,
+            ),
+            height: 48,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
+              borderRadius: BorderRadius.circular(HueRadius.pill),
               gradient: LinearGradient(
                 colors: intent.preset.gradient,
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+                begin: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                end: isMe ? Alignment.centerLeft : Alignment.centerRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: intent.preset.primaryColor.withValues(alpha: 0.4),
-                  blurRadius: 20,
-                  spreadRadius: 2,
-                )
+                  color: intent.preset.primaryColor.withValues(alpha: 0.35),
+                  blurRadius: 14,
+                  spreadRadius: 1,
+                ),
               ],
             ),
-          ),
-          const Gap(4),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(intent.preset.label, style: HueTextStyles.caption),
-              const Gap(4),
-              Icon(
-                message.acknowledgedAt != null ? Icons.done_all : Icons.done,
-                size: 12,
-                color: message.acknowledgedAt != null
-                    ? intent.preset.primaryColor
-                    : HueColors.textDisabled,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Small color dot
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+                  const Gap(8),
+                  // Label
+                  Expanded(
+                    child: Text(
+                      intent.preset.label,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const Gap(6),
+                  // Read indicator
+                  Icon(
+                    message.acknowledgedAt != null
+                        ? Icons.done_all
+                        : Icons.done,
+                    size: 13,
+                    color: Colors.white.withValues(alpha: 0.75),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ],
       ),
@@ -464,6 +501,7 @@ class _TextBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.hue;
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
@@ -472,7 +510,9 @@ class _TextBubble extends StatelessWidget {
         padding: const EdgeInsets.symmetric(
             horizontal: HueSpacing.md, vertical: HueSpacing.sm),
         decoration: BoxDecoration(
-          color: isMe ? const Color(0xFF1F2A36) : HueColors.bgCard,
+          color: isMe
+              ? (c.isDark ? const Color(0xFF1F2A36) : const Color(0xFFE0E8F5))
+              : c.bgCard,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(HueRadius.lg),
             topRight: const Radius.circular(HueRadius.lg),
@@ -483,7 +523,7 @@ class _TextBubble extends StatelessWidget {
         child: Text(
           message.text ?? '',
           style: HueTextStyles.body.copyWith(
-            color: isMe ? HueColors.textPrimary : HueColors.textSecondary,
+            color: isMe ? c.textPrimary : c.textSecondary,
           ),
         ),
       ),
@@ -512,6 +552,7 @@ class _ComposerBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.hue;
     return Container(
       padding: const EdgeInsets.fromLTRB(
         HueSpacing.md,
@@ -528,13 +569,13 @@ class _ComposerBar extends StatelessWidget {
                     autofocus: true,
                     maxLength: 280,
                     maxLines: null,
-                    style: HueTextStyles.body,
+                    style: HueTextStyles.body.copyWith(color: c.textPrimary),
                     decoration: InputDecoration(
                       hintText: 'Yaz...',
-                      hintStyle: HueTextStyles.meta,
+                      hintStyle: HueTextStyles.meta.copyWith(color: c.textSecondary),
                       counterText: '',
                       filled: true,
-                      fillColor: HueColors.bgCard,
+                      fillColor: c.bgCard,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(HueRadius.lg),
                         borderSide: BorderSide.none,
@@ -555,7 +596,7 @@ class _ComposerBar extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
-                  color: HueColors.textSecondary,
+                  color: c.textSecondary,
                   onPressed: onCloseComposer,
                 ),
               ],
@@ -571,10 +612,11 @@ class _ComposerBar extends StatelessWidget {
                         vertical: 12,
                       ),
                       decoration: BoxDecoration(
-                        color: HueColors.bgCard,
+                        color: c.bgCard,
                         borderRadius: BorderRadius.circular(HueRadius.lg),
                       ),
-                      child: Text('Yazı yaz', style: HueTextStyles.meta),
+                      child: Text('Yazı yaz',
+                          style: HueTextStyles.meta.copyWith(color: c.textSecondary)),
                     ),
                   ),
                 ),
@@ -594,6 +636,7 @@ class _EmptyConversation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.hue;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -615,14 +658,16 @@ class _EmptyConversation extends StatelessWidget {
             child: Center(
               child: Text(
                 contact.name[0].toUpperCase(),
-                style: HueTextStyles.title.copyWith(fontSize: 28),
+                style: HueTextStyles.title.copyWith(fontSize: 28, color: c.textPrimary),
               ),
             ),
           ),
           const Gap(HueSpacing.md),
-          Text('${contact.name} ile sohbet', style: HueTextStyles.subtitle),
+          Text('${contact.name} ile sohbet',
+              style: HueTextStyles.subtitle.copyWith(color: c.textPrimary)),
           const Gap(HueSpacing.xs),
-          Text('Bir hue göndererek başla', style: HueTextStyles.meta),
+          Text('Bir hue göndererek başla',
+              style: HueTextStyles.meta.copyWith(color: c.textSecondary)),
         ],
       ),
     );

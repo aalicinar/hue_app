@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
-import 'package:gap/gap.dart';
 import '../../app/theme/tokens.dart';
-import '../../app/theme/text_styles.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -44,7 +42,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFFFF8C42).withOpacity(0.4),
+                    color: const Color(0xFFFF8C42).withValues(alpha: 0.4),
                     blurRadius: 32,
                     spreadRadius: 4,
                   ),
@@ -63,11 +61,6 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ).animate().fadeIn(duration: 600.ms).scaleXY(
                 begin: 0.92, end: 1.0, duration: 600.ms, curve: Curves.easeOut),
-            const Gap(HueSpacing.md),
-            Text(
-              'Mesaj değil, niyet gönder.',
-              style: HueTextStyles.tagline,
-            ).animate(delay: 400.ms).fadeIn(duration: 400.ms),
           ],
         ),
       ),

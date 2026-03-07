@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:gap/gap.dart';
+import '../../app/app.dart';
 import '../../app/theme/tokens.dart';
 import '../../app/theme/text_styles.dart';
 import '../../core/mock/mock_seed.dart';
@@ -41,13 +42,14 @@ class _PresenceBoardScreenState extends ConsumerState<PresenceBoardScreen> {
     final prefs = ref.read(userPrefsProvider);
     if (prefs.isMuted(contact.id)) {
       final info = prefs.getMuteInfo(contact.id)!;
+      final c = context.hue;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
             '${contact.name} susturuldu — ${info.remainingLabel} kaldı',
             style: HueTextStyles.meta.copyWith(color: Colors.white),
           ),
-          backgroundColor: HueColors.bgCard,
+          backgroundColor: c.bgCard,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(HueRadius.lg),
@@ -93,9 +95,10 @@ class _PresenceBoardScreenState extends ConsumerState<PresenceBoardScreen> {
   @override
   Widget build(BuildContext context) {
     final prefs = ref.watch(userPrefsProvider);
+    final c = context.hue;
 
     return Scaffold(
-      backgroundColor: HueColors.bgPrimary,
+      backgroundColor: c.bgPrimary,
       body: SafeArea(
         child: Column(
           children: [
@@ -107,6 +110,14 @@ class _PresenceBoardScreenState extends ConsumerState<PresenceBoardScreen> {
               }),
               onSearchChanged: (q) => setState(() => _searchQuery = q),
               onSettingsPressed: () => context.go('/settings'),
+              onThemeToggle: () {
+                final current = ref.read(themeModeProvider);
+                ref.read(themeModeProvider.notifier).state =
+                    current == ThemeMode.dark
+                        ? ThemeMode.light
+                        : ThemeMode.dark;
+              },
+              isDark: c.isDark,
             ),
             Expanded(
               child: _filtered.isEmpty
@@ -156,16 +167,21 @@ class _TopBar extends StatelessWidget {
   final VoidCallback onSearchToggle;
   final ValueChanged<String> onSearchChanged;
   final VoidCallback onSettingsPressed;
+  final VoidCallback onThemeToggle;
+  final bool isDark;
 
   const _TopBar({
     required this.searchOpen,
     required this.onSearchToggle,
     required this.onSearchChanged,
     required this.onSettingsPressed,
+    required this.onThemeToggle,
+    required this.isDark,
   });
 
   @override
   Widget build(BuildContext context) {
+    final c = context.hue;
     return Container(
       padding: const EdgeInsets.symmetric(
           horizontal: HueSpacing.md, vertical: HueSpacing.sm),
@@ -175,7 +191,7 @@ class _TopBar extends StatelessWidget {
             children: [
               IconButton(
                 icon: const Icon(Icons.settings_outlined),
-                color: HueColors.textSecondary,
+                color: c.textSecondary,
                 onPressed: onSettingsPressed,
               ),
               const Spacer(),
@@ -194,9 +210,16 @@ class _TopBar extends StatelessWidget {
                 ),
               ),
               const Spacer(),
+              // Theme toggle
+              IconButton(
+                icon: Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
+                color: c.textSecondary,
+                onPressed: onThemeToggle,
+                tooltip: isDark ? 'Açık mod' : 'Koyu mod',
+              ),
               IconButton(
                 icon: Icon(searchOpen ? Icons.close : Icons.search),
-                color: HueColors.textSecondary,
+                color: c.textSecondary,
                 onPressed: onSearchToggle,
               ),
             ],
@@ -211,14 +234,14 @@ class _TopBar extends StatelessWidget {
               child: TextField(
                 autofocus: true,
                 onChanged: onSearchChanged,
-                style: HueTextStyles.body,
+                style: HueTextStyles.body.copyWith(color: c.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'Kişi ara',
-                  hintStyle: HueTextStyles.meta,
-                  prefixIcon: const Icon(Icons.search,
-                      color: HueColors.textSecondary, size: 20),
+                  hintStyle: HueTextStyles.meta.copyWith(color: c.textSecondary),
+                  prefixIcon: Icon(Icons.search,
+                      color: c.textSecondary, size: 20),
                   filled: true,
-                  fillColor: HueColors.bgCard,
+                  fillColor: c.bgCard,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(HueRadius.lg),
                     borderSide: BorderSide.none,
@@ -255,21 +278,22 @@ class ContactRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.hue;
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        height: 78,
+        height: contact.lastMessage != null ? 88 : 78,
         margin: const EdgeInsets.symmetric(
           horizontal: HueSpacing.md,
           vertical: HueSpacing.xs,
         ),
         padding: const EdgeInsets.symmetric(horizontal: HueSpacing.md),
         decoration: BoxDecoration(
-          color: isMuted ? HueColors.bgSecondary : HueColors.bgCard,
+          color: isMuted ? c.bgSecondary : c.bgCard,
           borderRadius: BorderRadius.circular(HueRadius.lg),
           border: isMuted
-              ? Border.all(color: HueColors.borderSubtle, width: 1)
+              ? Border.all(color: c.borderSubtle, width: 1)
               : null,
         ),
         child: Row(
@@ -289,9 +313,7 @@ class ContactRow extends StatelessWidget {
                       Text(
                         contact.name,
                         style: HueTextStyles.label.copyWith(
-                          color: isMuted
-                              ? HueColors.textSecondary
-                              : HueColors.textPrimary,
+                          color: isMuted ? c.textSecondary : c.textPrimary,
                         ),
                       ),
                       if (isMuted && muteInfo != null) ...[
@@ -300,19 +322,19 @@ class ContactRow extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(
                               horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: HueColors.borderSubtle,
+                            color: c.borderSubtle,
                             borderRadius: BorderRadius.circular(HueRadius.pill),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.volume_off,
-                                  size: 10, color: HueColors.textSecondary),
+                              Icon(Icons.volume_off,
+                                  size: 10, color: c.textSecondary),
                               const Gap(2),
                               Text(
                                 muteInfo!.remainingLabel,
                                 style: HueTextStyles.caption
-                                    .copyWith(fontSize: 10),
+                                    .copyWith(fontSize: 10, color: c.textSecondary),
                               ),
                             ],
                           ),
@@ -329,17 +351,24 @@ class ContactRow extends StatelessWidget {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: isMuted
-                              ? HueColors.textDisabled
+                              ? c.textDisabled
                               : contact.presenceStatus.auraColor,
                         ),
                       ),
                       const Gap(HueSpacing.xs),
                       Text(
                         contact.presenceStatus.label,
-                        style: HueTextStyles.caption,
+                        style: HueTextStyles.caption.copyWith(color: c.textSecondary),
                       ),
                     ],
                   ),
+                  if (contact.lastMessage != null) ...[
+                    const Gap(3),
+                    _LastMessagePreview(
+                      message: contact.lastMessage!,
+                      isMuted: isMuted,
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -352,7 +381,7 @@ class ContactRow extends StatelessWidget {
                   const Gap(HueSpacing.xs),
                   Text(
                     formatRelativeTime(contact.lastIntent!.createdAt),
-                    style: HueTextStyles.caption,
+                    style: HueTextStyles.caption.copyWith(color: c.textSecondary),
                   ),
                 ],
               ),
@@ -370,10 +399,11 @@ class _PresenceAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.hue;
     final auraColor =
-        muted ? HueColors.textDisabled : contact.presenceStatus.auraColor;
+        muted ? c.textDisabled : contact.presenceStatus.auraColor;
     final auraEnd =
-        muted ? HueColors.borderSubtle : contact.presenceStatus.auraColorEnd;
+        muted ? c.borderSubtle : contact.presenceStatus.auraColorEnd;
     return Container(
       width: HueSizes.avatarMd,
       height: HueSizes.avatarMd,
@@ -427,17 +457,83 @@ class _IntentSwatch extends StatelessWidget {
   }
 }
 
+
+class _LastMessagePreview extends StatelessWidget {
+  final Message message;
+  final bool isMuted;
+  const _LastMessagePreview({required this.message, this.isMuted = false});
+
+  @override
+  Widget build(BuildContext context) {
+    final c = context.hue;
+    final isMe = message.senderId == MockSeed.currentUserId;
+
+    if (message.kind == MessageKind.hue && message.hueIntent != null) {
+      final preset = message.hueIntent!.preset;
+      // Mini pill for hue messages
+      return Row(
+        children: [
+          Text(
+            isMe ? 'Sen: ' : '',
+            style: HueTextStyles.caption.copyWith(
+              color: c.textDisabled,
+              fontSize: 10,
+            ),
+          ),
+          Container(
+            height: 16,
+            padding: const EdgeInsets.symmetric(horizontal: 7),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: preset.gradient,
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+              ),
+              borderRadius: BorderRadius.circular(HueRadius.pill),
+            ),
+            child: Center(
+              child: Text(
+                preset.label,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 9,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.1,
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    } else {
+      // Text preview
+      final prefix = isMe ? 'Sen: ' : '';
+      final preview = '$prefix${message.text ?? ''}';
+      return Text(
+        preview,
+        style: HueTextStyles.caption.copyWith(
+          color: isMuted ? c.textDisabled : c.textSecondary,
+          fontSize: 11,
+        ),
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
+  }
+}
+
 class _EmptyState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final c = context.hue;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Text('🌫️', style: TextStyle(fontSize: 48)),
           const Gap(HueSpacing.md),
-          Text('Kimse bulunamadı', style: HueTextStyles.subtitle),
-          Text('Aramayı değiştir', style: HueTextStyles.meta),
+          Text('Kimse bulunamadı', style: HueTextStyles.subtitle.copyWith(color: c.textPrimary)),
+          Text('Aramayı değiştir', style: HueTextStyles.meta.copyWith(color: c.textSecondary)),
         ],
       ),
     );
@@ -473,33 +569,33 @@ class _LongPressMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: HueColors.bgSecondary,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(HueRadius.xl)),
+    final c = context.hue;
+    final maxH = MediaQuery.of(context).size.height * 0.55;
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxH),
+      child: Container(
+      decoration: BoxDecoration(
+        color: c.bgSecondary,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(HueRadius.xl)),
       ),
       padding: const EdgeInsets.all(HueSpacing.lg),
-      child: Column(
+      child: SingleChildScrollView(
+        child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Handle
           Center(
             child: Container(
               width: 36,
               height: 4,
               decoration: BoxDecoration(
-                color: HueColors.borderSubtle,
+                color: c.borderSubtle,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
           const Gap(HueSpacing.md),
-          // Kişi adı
-          Text(
-            contact.name,
-            style: HueTextStyles.subtitle,
-          ),
+          Text(contact.name, style: HueTextStyles.subtitle.copyWith(color: c.textPrimary)),
           const Gap(HueSpacing.lg),
 
           if (isMuted) ...[
@@ -517,7 +613,7 @@ class _LongPressMenu extends StatelessWidget {
               'SUS',
               style: HueTextStyles.caption.copyWith(
                 letterSpacing: 1.0,
-                color: HueColors.textDisabled,
+                color: c.textDisabled,
               ),
             ),
             const Gap(HueSpacing.sm),
@@ -530,7 +626,7 @@ class _LongPressMenu extends StatelessWidget {
                   },
                 )),
           ],
-          const Divider(color: HueColors.borderSubtle, height: HueSpacing.lg),
+          Divider(color: c.borderSubtle, height: HueSpacing.lg),
           _MenuAction(
             icon: Icons.person_outline,
             label: 'Profili Gör',
@@ -538,8 +634,10 @@ class _LongPressMenu extends StatelessWidget {
           ),
           const Gap(HueSpacing.md),
         ],
-      ),
-    );
+       ), // Column
+      ),   // SingleChildScrollView
+     ),    // Container
+    );     // ConstrainedBox
   }
 }
 
@@ -558,6 +656,7 @@ class _MenuAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.hue;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(HueRadius.md),
@@ -568,16 +667,12 @@ class _MenuAction extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: color ?? HueColors.textSecondary,
-              size: 20,
-            ),
+            Icon(icon, color: color ?? c.textSecondary, size: 20),
             const Gap(HueSpacing.md),
             Text(
               label,
               style: HueTextStyles.body.copyWith(
-                color: color ?? HueColors.textPrimary,
+                color: color ?? c.textPrimary,
               ),
             ),
           ],
@@ -597,8 +692,9 @@ class _ContactProfileDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = context.hue;
     return Dialog(
-      backgroundColor: HueColors.bgSecondary,
+      backgroundColor: c.bgSecondary,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(HueRadius.xl),
       ),
@@ -619,14 +715,12 @@ class _ContactProfileDialog extends StatelessWidget {
                   ],
                 ),
                 border: Border.all(
-                  color:
-                      contact.presenceStatus.auraColor.withValues(alpha: 0.6),
+                  color: contact.presenceStatus.auraColor.withValues(alpha: 0.6),
                   width: 2,
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color:
-                        contact.presenceStatus.auraColor.withValues(alpha: 0.3),
+                    color: contact.presenceStatus.auraColor.withValues(alpha: 0.3),
                     blurRadius: 24,
                     spreadRadius: 4,
                   ),
@@ -635,12 +729,12 @@ class _ContactProfileDialog extends StatelessWidget {
               child: Center(
                 child: Text(
                   contact.name[0].toUpperCase(),
-                  style: HueTextStyles.title.copyWith(fontSize: 32),
+                  style: HueTextStyles.title.copyWith(fontSize: 32, color: c.textPrimary),
                 ),
               ),
             ),
             const Gap(HueSpacing.md),
-            Text(contact.name, style: HueTextStyles.title),
+            Text(contact.name, style: HueTextStyles.title.copyWith(color: c.textPrimary)),
             const Gap(HueSpacing.xs),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -654,13 +748,14 @@ class _ContactProfileDialog extends StatelessWidget {
                   ),
                 ),
                 const Gap(HueSpacing.xs),
-                Text(contact.presenceStatus.label, style: HueTextStyles.meta),
+                Text(contact.presenceStatus.label,
+                    style: HueTextStyles.meta.copyWith(color: c.textSecondary)),
               ],
             ),
             const Gap(HueSpacing.lg),
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Kapat', style: HueTextStyles.meta),
+              child: Text('Kapat', style: HueTextStyles.meta.copyWith(color: c.textSecondary)),
             ),
           ],
         ),

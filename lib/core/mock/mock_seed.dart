@@ -17,6 +17,21 @@ class MockSeed {
         createdAt: DateTime.now().subtract(const Duration(minutes: 12)),
       ),
       lastActiveAt: DateTime.now().subtract(const Duration(minutes: 12)),
+      lastMessage: Message(
+        id: 'lm1',
+        conversationId: 'conv_user1',
+        senderId: currentUserId,
+        kind: MessageKind.hue,
+        hueIntent: HueIntent(
+          id: 'lmi1',
+          senderId: currentUserId,
+          recipientId: 'user1',
+          preset: HuePreset.onTheWay,
+          intensity: 1.0,
+          createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
+        ),
+        createdAt: DateTime.now().subtract(const Duration(minutes: 5)),
+      ),
     ),
     Contact(
       id: 'user2',
@@ -32,6 +47,14 @@ class MockSeed {
         acknowledgedAt: DateTime.now().subtract(const Duration(minutes: 55)),
       ),
       lastActiveAt: DateTime.now().subtract(const Duration(hours: 2)),
+      lastMessage: Message(
+        id: 'lm2',
+        conversationId: 'conv_user2',
+        senderId: 'user2',
+        kind: MessageKind.text,
+        text: 'Tamam, yarın görüşürüz o zaman!',
+        createdAt: DateTime.now().subtract(const Duration(hours: 1)),
+      ),
     ),
     Contact(
       id: 'user3',
@@ -39,6 +62,14 @@ class MockSeed {
       presenceStatus: PresenceStatus.deepTalk,
       lastIntent: null,
       lastActiveAt: DateTime.now().subtract(const Duration(hours: 5)),
+      lastMessage: Message(
+        id: 'lm3',
+        conversationId: 'conv_user3',
+        senderId: currentUserId,
+        kind: MessageKind.text,
+        text: 'Nasıl gidiyor, bir süredir konuşmadık.',
+        createdAt: DateTime.now().subtract(const Duration(hours: 4)),
+      ),
     ),
     Contact(
       id: 'user4',
@@ -53,6 +84,21 @@ class MockSeed {
         createdAt: DateTime.now().subtract(const Duration(minutes: 3)),
       ),
       lastActiveAt: DateTime.now().subtract(const Duration(minutes: 3)),
+      lastMessage: Message(
+        id: 'lm4',
+        conversationId: 'conv_user4',
+        senderId: 'user4',
+        kind: MessageKind.hue,
+        hueIntent: HueIntent(
+          id: 'lmi4',
+          senderId: 'user4',
+          recipientId: currentUserId,
+          preset: HuePreset.deep,
+          intensity: 0.6,
+          createdAt: DateTime.now().subtract(const Duration(minutes: 3)),
+        ),
+        createdAt: DateTime.now().subtract(const Duration(minutes: 3)),
+      ),
     ),
     Contact(
       id: 'user5',
@@ -60,6 +106,7 @@ class MockSeed {
       presenceStatus: PresenceStatus.sleeping,
       lastIntent: null,
       lastActiveAt: DateTime.now().subtract(const Duration(hours: 8)),
+      // no last message yet
     ),
     Contact(
       id: 'user6',
@@ -75,6 +122,14 @@ class MockSeed {
         acknowledgedAt: DateTime.now().subtract(const Duration(hours: 2)),
       ),
       lastActiveAt: DateTime.now().subtract(const Duration(hours: 3)),
+      lastMessage: Message(
+        id: 'lm6',
+        conversationId: 'conv_user6',
+        senderId: 'user6',
+        kind: MessageKind.text,
+        text: 'Seni dinliyorum, anlat bakalım 🌊',
+        createdAt: DateTime.now().subtract(const Duration(hours: 3)),
+      ),
     ),
   ];
 

@@ -1,5 +1,6 @@
 import 'presence.dart';
 import 'intent.dart';
+import 'message.dart';
 
 class Contact {
   final String id;
@@ -8,6 +9,7 @@ class Contact {
   final PresenceStatus presenceStatus;
   final HueIntent? lastIntent;
   final DateTime? lastActiveAt;
+  final Message? lastMessage;
 
   const Contact({
     required this.id,
@@ -16,5 +18,6 @@ class Contact {
     required this.presenceStatus,
     this.lastIntent,
     this.lastActiveAt,
+    this.lastMessage,
   });
 }
