@@ -187,43 +187,55 @@ class _TopBar extends StatelessWidget {
           horizontal: HueSpacing.md, vertical: HueSpacing.sm),
       child: Column(
         children: [
-          Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.settings_outlined),
-                color: c.textSecondary,
-                onPressed: onSettingsPressed,
-              ),
-              const Spacer(),
-              ShaderMask(
-                shaderCallback: (bounds) => const LinearGradient(
-                  colors: [Color(0xFFFF8C42), Color(0xFF6C3483)],
-                ).createShader(bounds),
-                child: const Text(
-                  'hue',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.5,
-                    color: Colors.white,
+          // ── Title row with Stack-centered logo ──────────────────
+          SizedBox(
+            height: 48,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Logo — always perfectly centered
+                ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [Color(0xFFFF8C42), Color(0xFF6C3483)],
+                  ).createShader(bounds),
+                  child: const Text(
+                    'hue',
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: -0.5,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
-              ),
-              const Spacer(),
-              // Theme toggle
-              IconButton(
-                icon: Icon(isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
-                color: c.textSecondary,
-                onPressed: onThemeToggle,
-                tooltip: isDark ? 'Açık mod' : 'Koyu mod',
-              ),
-              IconButton(
-                icon: Icon(searchOpen ? Icons.close : Icons.search),
-                color: c.textSecondary,
-                onPressed: onSearchToggle,
-              ),
-            ],
+                // Right actions
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(isDark
+                            ? Icons.light_mode_outlined
+                            : Icons.dark_mode_outlined),
+                        color: c.textSecondary,
+                        onPressed: onThemeToggle,
+                        tooltip: isDark ? 'Açık mod' : 'Koyu mod',
+                        iconSize: 20,
+                      ),
+                      IconButton(
+                        icon: Icon(searchOpen ? Icons.close : Icons.search),
+                        color: c.textSecondary,
+                        onPressed: onSearchToggle,
+                        iconSize: 20,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
+          // ── Search field ────────────────────────────────────────
           if (searchOpen)
             Padding(
               padding: const EdgeInsets.only(
@@ -237,9 +249,10 @@ class _TopBar extends StatelessWidget {
                 style: HueTextStyles.body.copyWith(color: c.textPrimary),
                 decoration: InputDecoration(
                   hintText: 'Kişi ara',
-                  hintStyle: HueTextStyles.meta.copyWith(color: c.textSecondary),
-                  prefixIcon: Icon(Icons.search,
-                      color: c.textSecondary, size: 20),
+                  hintStyle:
+                      HueTextStyles.meta.copyWith(color: c.textSecondary),
+                  prefixIcon:
+                      Icon(Icons.search, color: c.textSecondary, size: 20),
                   filled: true,
                   fillColor: c.bgCard,
                   border: OutlineInputBorder(
@@ -255,6 +268,9 @@ class _TopBar extends StatelessWidget {
     );
   }
 }
+
+
+
 
 // ──────────────────────────────────────────────────────
 // CONTACT ROW

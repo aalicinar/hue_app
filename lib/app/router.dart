@@ -1,4 +1,5 @@
 import 'package:go_router/go_router.dart';
+import '../features/shell/shell_screen.dart';
 import '../features/splash/splash_screen.dart';
 import '../features/onboarding/onboarding_a_screen.dart';
 import '../features/onboarding/onboarding_b_screen.dart';
@@ -10,6 +11,7 @@ import '../features/settings/settings_screen.dart';
 final GoRouter appRouter = GoRouter(
   initialLocation: '/splash',
   routes: [
+    // ── No-shell routes ─────────────────────────────────────────────
     GoRoute(
       path: '/splash',
       builder: (context, state) => const SplashScreen(),
@@ -26,20 +28,27 @@ final GoRouter appRouter = GoRouter(
       path: '/onboarding-c',
       builder: (context, state) => const OnboardingCScreen(),
     ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => const PresenceBoardScreen(),
-    ),
-    GoRoute(
-      path: '/conversation/:contactId',
-      builder: (context, state) {
-        final contactId = state.pathParameters['contactId']!;
-        return ConversationScreen(contactId: contactId);
-      },
-    ),
-    GoRoute(
-      path: '/settings',
-      builder: (context, state) => const SettingsScreen(),
+
+    // ── Shell routes (with bottom nav) ──────────────────────────────
+    ShellRoute(
+      builder: (context, state, child) => ShellScreen(child: child),
+      routes: [
+        GoRoute(
+          path: '/home',
+          builder: (context, state) => const PresenceBoardScreen(),
+        ),
+        GoRoute(
+          path: '/conversation/:contactId',
+          builder: (context, state) {
+            final contactId = state.pathParameters['contactId']!;
+            return ConversationScreen(contactId: contactId);
+          },
+        ),
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) => const SettingsScreen(),
+        ),
+      ],
     ),
   ],
 );
